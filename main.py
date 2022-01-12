@@ -7,67 +7,60 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-q = []
-
-# def data_gen():
-#     for cnt in itertools.count():
-#         t = cnt / 10
-#         if(len(q) == 0):
-#             yield t, 0
-#         else:
-#             v = q[0]
-#             q.pop()
-#             yield t, v
-#
-#
-# def init():
-#     ax.set_ylim(40, 70)
-#     ax.set_xlim(0, 10)
-#     del xdata[:]
-#     del ydata[:]
-#     line.set_data(xdata, ydata)
-#     return line,
-#
-# fig, ax = plt.subplots()
-# line, = ax.plot([], [], lw=2)
-# ax.grid()
-# xdata, ydata = [], []
-#
-#
-# def run(data):
-#     # update the data
-#     t, y = data
-#     xdata.append(t)
-#     ydata.append(y)
-#     xmin, xmax = ax.get_xlim()
-#
-#     if t >= xmax:
-#         ax.set_xlim(xmin, 2*xmax)
-#         ax.figure.canvas.draw()
-#     line.set_data(xdata, ydata)
-#
-#     return line,
-#
-# ani = animation.FuncAnimation(fig, run, data_gen, interval=10, init_func=init)
-# plt.show()
-
-
 
 s = socket.socket(type=socket.SOCK_DGRAM)
 s.bind(('192.168.4.2', 9999))
 
 cnt = 0
-with open('csi2.dat', 'wb') as f:
-    while (cnt < 1000):
-        cnt += 1
-        data, address = s.recvfrom(4)
-        d = struct.unpack('f', data)[0]
-        f.write(data)
-        print(d)
-        print(cnt)
-    print('end')
 
+# Create a figure and a set of subplots.
+# Returns: figure, axes.Axes or Array of Axes
+# Figures: windows, widgets
+# Figure contains one or more Axes
+# Axes: an area where points can be specified in terms of x-y coordinates
+fig, ax = plt.subplots()
+# lw: line width
+line, = ax.plot([], [], lw=2)
+ax.grid()
+xdata, ydata = [], []
 
+# Get csi from udp socket
+def get_csi():
+    for i in itertools.count():
+        csi, address = s.recvfrom(4)
+        csi = struct.unpack('f', csi)[0]
+        yield i, csi
 
+def init():
+    # Set the y-axis view limits
+    ax.set_ylim(35, 70)
+    ax.set_xlim(0, 100)
+    del xdata[:]
+    del ydata[:]
+    line.set_data(xdata, ydata)
 
+def run(data):
+    t, y = data
+    xdata.append(t)
+    ydata.append(y)
+    xmin, xmax = ax.get_xlim()
+    if(len(xdata) > xmax):
+        xdata.pop()
+        ydata.pop()
+        ax.set_xlim(xmin+1, xmax+1)
+        ax.figure.canvas.draw()
+    line.set_data(xdata, ydata)
+    return line
 
+if __name__ == '__main__':
+    ani = animation.FuncAnimation(fig, run, get_csi, interval=2, init_func=init)
+    plt.show()
+    # with open('csi2.dat', 'wb') as f:
+    #     while (cnt < 1000):
+    #         cnt += 1
+    #         data, address = s.recvfrom(4)
+    #         d = struct.unpack('f', data)[0]
+    #         f.write(data)
+    #         print(d)
+    #         print(cnt)
+    #     print('end')
