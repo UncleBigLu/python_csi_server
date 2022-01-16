@@ -33,8 +33,8 @@ def get_csi():
 
 def init():
     # Set the y-axis view limits
-    ax.set_ylim(35, 70)
-    ax.set_xlim(0, 100)
+    ax.set_ylim(20, 70)
+    ax.set_xlim(0, 1000)
     del xdata[:]
     del ydata[:]
     line.set_data(xdata, ydata)
@@ -47,13 +47,13 @@ def run(data):
     if(len(xdata) > xmax):
         xdata.pop()
         ydata.pop()
-        ax.set_xlim(xmin+1, xmax+1)
+        ax.set_xlim(xmin+800, xmax+800)
         ax.figure.canvas.draw()
     line.set_data(xdata, ydata)
     return line
 
 if __name__ == '__main__':
-    ani = animation.FuncAnimation(fig, run, get_csi, interval=2, init_func=init)
+    ani = animation.FuncAnimation(fig, run, get_csi, interval=1, init_func=init)
     plt.show()
     # with open('csi2.dat', 'wb') as f:
     #     while (cnt < 1000):
